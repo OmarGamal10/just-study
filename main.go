@@ -82,7 +82,7 @@ func saveAndFlush(hosts *txeh.Hosts) {
 		log.Fatalf("Failed to save hosts file (are you root?): %v", err)
 	}
 
-	// OS caches the real IP either way even after redirection, so flush the dns cache forcing it to always read /etc/hosts
+	// OS caches the real IP either way even after redirection, flusing the dns cache forces it to read /etc/hosts
 	cmd := exec.Command("resolvectl", "flush-caches")
 	err = cmd.Run()
 	if err != nil {
@@ -91,13 +91,19 @@ func saveAndFlush(hosts *txeh.Hosts) {
 }
 
 func showStatus(hosts *txeh.Hosts) {
-	bait := blockList[0]
-	found, ip, _ := hosts.HostAddressLookup(bait, txeh.IPFamilyV4)
+	canary := blockList[0] // coal miners back then carried a canary to the mines to detect toxic gases(if the canary died) :D
+	found, ip, _ := hosts.HostAddressLookup(canary, txeh.IPFamilyV4)
+
+	const (
+		ColorGreen = "\033[32m"
+		ColorRed   = "\033[31m"
+		ColorReset = "\033[0m"
+	)
 
 	if found && ip == redirectIP {
-		fmt.Println("You should be studying rn")
-		fmt.Printf("Distractions are currently redirected to %s.\n", redirectIP)
+		fmt.Printf("%sYou should be studying rn\n", ColorRed)
+		fmt.Printf("Distractions are currently redirected to %s%s.\n", redirectIP, ColorReset)
 	} else {
-		fmt.Println("You're not studying")
+		fmt.Printf("%sYou're not studying\n%s", ColorGreen, ColorReset)
 	}
 }
