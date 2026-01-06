@@ -25,13 +25,13 @@ sudo ./install.sh
 
 ```bash
 # Block all distractions & kill active sessions
-  sudo focus on
+  sudo study on
 
 # Restore access
-  sudo focus off
+  sudo study off
 
 # Check current status
-  sudo focus status
+  sudo study status
 ```
 
 ### Note
