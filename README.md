@@ -1,6 +1,6 @@
 # Just study
 
-- Operates at the **Kernel Network Layer**, making it impossible to bypass without a reboot or a `sudo study off`.
+- Operates at the **Kernel Network Layer**, making it impossible to bypass without a `sudo study off`.
 
 ## Requirements
 
