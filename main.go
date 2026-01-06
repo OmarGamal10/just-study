@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"os/exec"
 
@@ -12,7 +13,6 @@ import (
 var blockList = []string{
 	"facebook.com", "www.facebook.com",
 	"x.com", "www.x.com",
-	"github.com", "www.github.com",
 	"instagram.com", "www.instagram.com",
 	"linkedin.com", "www.linkedin.com",
 }
@@ -59,17 +59,35 @@ func main() {
 }
 
 func enable(hosts *txeh.Hosts) {
-	for _, site := range blockList {
-		hosts.AddHost(redirectIP, site)
+
+	targetIPs := make([]string, 0)
+
+	for _, domain := range blockList {
+		ips, _ := net.LookupIP(domain)
+		hosts.AddHost(redirectIP, domain)
+
+		for _, ip := range ips {
+			// fmt.Printf("Blocking %s (%s)\n", domain, ip.String())
+			targetIPs = append(targetIPs, ip.String())
+		}
 	}
 
 	saveAndFlush(hosts)
+	if len(targetIPs) > 0 {
+		killActiveConnections(&targetIPs)
+	}
 	fmt.Println("Just study")
 }
 
+func killActiveConnections(targetIPs *[]string) {
+	for _, ip := range *targetIPs {
+		exec.Command("ss", "-K", "dst", ip).Run()
+	}
+}
+
 func disable(hosts *txeh.Hosts) {
-	for _, site := range blockList {
-		hosts.RemoveHost(site)
+	for _, domain := range blockList {
+		hosts.RemoveHost(domain)
 	}
 
 	saveAndFlush(hosts)
