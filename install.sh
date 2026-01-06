@@ -6,6 +6,7 @@ set -e
 APP_NAME="study"
 INSTALL_DIR="/usr/local/bin"
 SOURCE_FILE="main.go"
+COMPLETION_FILE="completions.sh"
 
 if [ "$EUID" -ne 0 ]; then
   echo "Error: This script must be run as root."
@@ -23,6 +24,10 @@ go build -ldflags "-s -w" -o $APP_NAME $SOURCE_FILE # -s -w for a smaller binary
 mv $APP_NAME $INSTALL_DIR/$APP_NAME
 
 chmod +x $INSTALL_DIR/$APP_NAME
+
+cp $COMPLETION_FILE /etc/bash_completion.d/$APP_NAME
+chmod +x /etc/bash_completion.d/$APP_NAME
+echo "Restart your terminal for auto completion to take effect."
 
 echo "  Usage:"
 echo "    sudo $APP_NAME on  # To block sites"
