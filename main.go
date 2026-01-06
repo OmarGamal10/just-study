@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"sync"
 
 	"github.com/txn2/txeh"
 )
@@ -60,29 +61,36 @@ func main() {
 
 func enable(hosts *txeh.Hosts) {
 
-	targetIPs := make([]string, 0)
+	ipChan := make(chan string, 100)
+	var wg sync.WaitGroup
 
-	for _, domain := range blockList {
-		ips, _ := net.LookupIP(domain)
-		hosts.AddHost(redirectIP, domain)
-
-		for _, ip := range ips {
-			// fmt.Printf("Blocking %s (%s)\n", domain, ip.String())
-			targetIPs = append(targetIPs, ip.String())
+	wg.Add(1)
+	go func() {
+		defer wg.Done()
+		for ip := range ipChan {
+			exec.Command("ss", "-K", "dst", ip).Run()
 		}
+	}()
+
+	var lookupWg sync.WaitGroup
+	for _, domain := range blockList {
+		hosts.AddHost(redirectIP, domain)
+		lookupWg.Add(1)
+		go func(domain string) {
+			defer lookupWg.Done()
+			ips, _ := net.LookupIP(domain)
+			for _, ip := range ips {
+				ipChan <- ip.String()
+				// fmt.Printf("Blocking %s (%s)\n", domain, ip.String())
+			}
+		}(domain)
 	}
 
+	lookupWg.Wait()
+	close(ipChan)
+	wg.Wait()
 	saveAndFlush(hosts)
-	if len(targetIPs) > 0 {
-		killActiveConnections(&targetIPs)
-	}
 	fmt.Println("Just study")
-}
-
-func killActiveConnections(targetIPs *[]string) {
-	for _, ip := range *targetIPs {
-		exec.Command("ss", "-K", "dst", ip).Run()
-	}
 }
 
 func disable(hosts *txeh.Hosts) {
