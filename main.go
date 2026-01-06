@@ -14,7 +14,7 @@ var blockList = []string{
 	"facebook.com", "www.facebook.com",
 	"x.com", "www.x.com",
 	"instagram.com", "www.instagram.com",
-	"linkedin.com", "www.linkedin.com",
+	"tiktok.com", "www.tiktok.com",
 }
 
 const (

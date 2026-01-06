@@ -33,3 +33,7 @@ sudo ./install.sh
 # Check current status
   sudo focus status
 ```
+
+### Note
+
+- I should make it configurable through `add` command but im lazy just modify the code directly :D
